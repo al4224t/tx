@@ -2,137 +2,121 @@
 #include <wiringPi.h>
 #include <unistd.h>
 
+class drv8824
+{
+
+	int halfperiod = 1000;
+	int ustepdiv = 1;
+
+	int tMODE2 = 0;
+	int tMODE1 = 2;
+	int tMODE0 = 3;
+	int tSTEP = 23;
+	int tnENBL = 12;
+	int tDIR = 13;
+	int tDECAY = 14;
+	int tnSLEEP = 22;
+	//int tnHOME = 21;
+	//int tnFAULT = 22;
+
+	int bMODE2 = 6;
+	int bMODE1 = 10;
+	int bMODE0 = 11;
+	int bSTEP = 26;
+	int bnENBL = 31;
+	int bDIR = 27;
+	int bDECAY = 28;
+	int bnSLEEP = 29;
+	//int bnHOME = 21;
+	//int bnFAULT = 22;
+
+	int i=0;
+	int j=0;
+
+	public:
+
+	void setup (){
+		pinMode (tMODE2, OUTPUT);
+		pinMode (tMODE1, OUTPUT);
+		pinMode (tMODE0, OUTPUT);
+		pinMode (tSTEP, OUTPUT);
+		pinMode (tnENBL, OUTPUT);
+		pinMode (tDIR, OUTPUT);
+		pinMode (tDECAY, OUTPUT);
+		pinMode (tnSLEEP, OUTPUT);
+		pinMode (tnHOME, INPUT);
+		pinMode (tnFAULT, INPUT);
+
+		pinMode (bMODE2, OUTPUT);
+		pinMode (bMODE1, OUTPUT);
+		pinMode (bMODE0, OUTPUT);
+		pinMode (bSTEP, OUTPUT);
+		pinMode (bnENBL, OUTPUT);
+		pinMode (bDIR, OUTPUT);
+		pinMode (bDECAY, OUTPUT);
+		pinMode (bnSLEEP, OUTPUT);
+		pinMode (bnHOME, INPUT);
+		pinMode (bnFAULT, INPUT);
+
+		//set microstepping to 1/32
+		digitalWrite (tMODE2, HIGH);
+		digitalWrite (tMODE1, HIGH);
+		digitalWrite (tMODE0, HIGH);
+
+		digitalWrite (bMODE2, HIGH);
+		digitalWrite (bMODE1, HIGH);
+		digitalWrite (bMODE0, HIGH);
+		
+		ustepdiv = 32;
+
+        //set decay mode to fast
+        digitalWrite (tDECAY, HIGH);
+		digitalWrite (bDECAY, HIGH);
+        
+		//set enable and sleep
+		digitalWrite (tENBL, LOW);
+		digitalWrite (tSLEEP, HIGH);
+		digitalWrite (bnENBL, LOW);
+		digitalWrite (bnSLEEP, HIGH);
+	}
+
+	void tstepping (int direction, int steps, float rpm){
+		digitalWrite(tDIR, direction);
+		halfperiod = ((60*1000000)/(ustepdiv*1000*rpm*2));
+		for (i=0; i<steps; i++){
+			digitalWrite(tSTEP,HIGH);
+			usleep(halfperiod);
+			digitalWrite(tSTEP,LOW);
+			usleep(halfperiod);
+		}
+	}
+
+    void bstepping (int direction, int steps, float rpm){
+		digitalWrite(bDIR, direction);
+		halfperiod = ((60*1000000)/(ustepdiv*1000*trpm*2));
+		for (i=0; i<steps; i++){
+			digitalWrite(bSTEP,HIGH);
+			usleep(halfperiod);
+			digitalWrite(bSTEP,LOW);
+			usleep(halfperiod);
+		}
+	}
+
+};
+
+
 int main()
 {
 
 	wiringPiSetup ();
 
-	int MODE2 = 0;
-	int MODE1 = 2;
-	int MODE0 = 3;
-	int STEP = 23;
-	int nENBL = 12;
-	int DIR = 13;
-	int DECAY = 14;
-	int nSLEEP = 22;
-	//int nHOME = 21;
-	//int nFAULT = 22;
+	drv8824 drv8824lower;
+	drv8824lower.setup();
 
-	int tMODE2 = 6;
-	int tMODE1 = 10;
-	int tMODE0 = 11;
-	int tSTEP = 26;
-	int tnENBL = 31;
-	int tDIR = 27;
-	int tDECAY = 28;
-	int tnSLEEP = 29;
-	//int tnHOME = 21;
-	//int tnFAULT = 22;
-
-        pinMode (MODE2, OUTPUT);
-        pinMode (MODE1, OUTPUT);
-        pinMode (MODE0, OUTPUT);
-        pinMode (STEP, OUTPUT);
-        pinMode (nENBL, OUTPUT);
-        pinMode (DIR, OUTPUT);
-        pinMode (DECAY, OUTPUT);
-        pinMode (nSLEEP, OUTPUT);
-        //pinMode (nHOME, INPUT);
-        //pinMode (nFAULT, INPUT);
-
-	pinMode (tMODE2, OUTPUT);
-        pinMode (tMODE1, OUTPUT);
-        pinMode (tMODE0, OUTPUT);
-        pinMode (tSTEP, OUTPUT);
-        pinMode (tnENBL, OUTPUT);
-        pinMode (tDIR, OUTPUT);
-        pinMode (tDECAY, OUTPUT);
-        pinMode (tnSLEEP, OUTPUT);
-        //pinMode (nHOME, INPUT);
-        //pinMode (nFAULT, INPUT);
-
-	//set microstepping to 1/32
-	digitalWrite (MODE2, HIGH);
-	digitalWrite (MODE1, HIGH);
-	digitalWrite (MODE0, HIGH);
-
-	digitalWrite (tMODE2, HIGH);
-	digitalWrite (tMODE1, HIGH);
-	digitalWrite (tMODE0, HIGH);
-	//set decay mode to fast
-	//digitalWrite (DECAY, LOW);
-
-	//set enable and sleep
-	digitalWrite (nENBL, LOW);
-	digitalWrite (nSLEEP, HIGH);
-
-	digitalWrite (tnENBL, LOW);
-	digitalWrite (tnSLEEP, HIGH);
-	//set direction
-	digitalWrite (DIR, LOW);
-	digitalWrite (tDIR, LOW);
-
-	//20 steps
-	int x=0;
-	while(x<8000)
-	{
-	digitalWrite (STEP, HIGH);
-	usleep(200);
-	digitalWrite (STEP, LOW);
-	usleep(200);
-	x++;
-	}
-
-	digitalWrite (DIR, HIGH);
-	x=0;
-	delay (100);
-
-        while(x<8000)
-        {
-        digitalWrite (STEP, HIGH);
-	usleep(300);
-        digitalWrite (STEP, LOW);
-	usleep(300);
-        x++;
-        }
-
-	delay (100);
-
-	x=0;
-	while(x<16000)
-	{
-	digitalWrite (tSTEP, HIGH);
-	usleep(200);
-	digitalWrite (tSTEP, LOW);
-	usleep(200);
-	x++;
-	}
-
-	digitalWrite (tDIR, HIGH);
-	x=0;
-	delay (100);
-
-        while(x<32000)
-        {
-        digitalWrite (tSTEP, HIGH);
-	usleep(200);
-        digitalWrite (tSTEP, LOW);
-	usleep(200);
-        x++;
-        }
-
-	delay (100);
-	x=0;
-	digitalWrite (tDIR, LOW);
-
-        while(x<16000)
-        {
-        digitalWrite (tSTEP, HIGH);
-	usleep(200);
-        digitalWrite (tSTEP, LOW);
-	usleep(200);
-        x++;
-        }
+	drv8824lower.tstepping(0,8000,5);
+	drv8824lower.tstepping(1,8000,5);
+	drv8824lower.bstepping(0,8000,5);
+	drv8824lower.bstepping(1,8000,5);
 
 	return 0;
 }
