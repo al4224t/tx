@@ -1,3 +1,3 @@
 all:
-	g++ -o steptest1 steptest1.cpp -lwiringPi -lcurses
-
+	g++ -o demo demo.cpp -lwiringPi -lncurses
+	
